@@ -32,6 +32,19 @@ string raceToString(Race race) {
 	}
 }
 
+string genderToString(Gender gender) {
+	switch (gender) {
+	case MALE:
+		return "MALE";
+	case FEMALE:
+		return "FEMALE";
+	case OTHER:
+		return "OTHER";
+	default:
+		return "UNKNOWN";
+	}
+}
+
 class Character {
 private:
 	string name;
@@ -104,16 +117,8 @@ public:
 	}
 };
 
-void createPlayer (Player* p) {
-	string name;
-	int age;
-	cout << "Choose the name of your character: ";
-	cin >> name;
-	p->setName(name);
-	cout << "How old is your character?";
-	cin >> age;
-	p->setAge(age);
-	unsigned char option;
+void readRace (Player* p) {
+    unsigned char option;
 	while(true) {
 		cout << "Choose type of character: " << endl;
 		cout << "1. " << raceToString(HUMAN) << endl;
@@ -142,8 +147,48 @@ void createPlayer (Player* p) {
 	}
 }
 
+void readGender (Player* p) {
+    unsigned char option;
+	while(true) {
+		cout << "Choose your character's gender: " << endl;
+		cout << "1. " << genderToString(MALE) << endl;
+		cout << "2. " << genderToString(FEMALE) << endl;
+		cout << "3. " << genderToString(OTHER) << endl;
+		cin >> option;
+		switch (option) {
+		case '1':
+			p->setGender(MALE);
+			break;
+		case '2' :
+			p->setGender(FEMALE);
+			break;
+		case '3' :
+			p->setGender(OTHER);
+			break;
+		default:
+			cout << "Invalid option." << endl;
+			continue;
+		}
+		break;
+	}
+}
+
+void createPlayer (Player* p) {
+	string name;
+	int age;
+	cout << "Choose the name of your character: ";
+	cin.ignore();
+	getline(cin, name);
+	p->setName(name);
+	cout << "How old is your character? ";
+	cin >> age;
+	p->setAge(age);
+	readRace(p);
+	readGender(p);
+}
+
 void printPlayer (Player* _p) {
-	cout << "Player's name is " << _p->getName() << " You are a " << _p->getGender() <<
+	cout << "Your name is " << _p->getName() << ". You are a(n) " << genderToString(_p->getGender()) <<
 	     " " << raceToString(_p->getRace()) << " and you are " << _p->getAge() << " years old. ";
 }
 
