@@ -3,6 +3,9 @@
 #include <memory>
 #include <string>
 #include <algorithm>
+#include <vector>
+#include <map>
+#include <limits>
 
 using namespace std;
 
@@ -90,6 +93,12 @@ public:
 	Gender getGender() {
 		return this->gender;
 	}
+
+	virtual void speak(Character* other) {
+		cout << "..." << endl;
+	}
+
+	virtual ~Character() {}
 };
 
 class Player : public Character {
@@ -106,6 +115,10 @@ public:
 	Player () : Character () {
 		health = 100;
 	}
+public:
+	void speak(Character* other) override {
+		cout << "I'll be the hero of your story!" << endl;
+	}
 };
 
 class NPC : public Character {
@@ -115,7 +128,10 @@ public:
 	    unsigned int _age,
 	    Race _race,
 	    Gender _gender) : Character (_name, _age, _race, _gender) {
-		cout << _name << "spawns." << endl;
+		cout << endl << _name << " spawns." << endl;
+	}
+	void speak(Character* other) override {
+		cout << endl << "Welcome to the forest, " << other->getName() << "! What would you like to do?" << endl;
 	}
 };
 
@@ -190,7 +206,7 @@ public:
 	}
 
 	void printItems() const {
-	    cout << endl << "Inventory Items: " << endl;
+		cout << endl << "Inventory Items: " << endl;
 		for (const auto& item : items) {
 			cout << item.getName() << " (x" << item.getQuantity() << ")" << endl;
 		}
@@ -209,7 +225,7 @@ public:
 void readRace (Player* p) {
 	unsigned char option;
 	while(true) {
-		cout << "Choose type of character: " << endl;
+		cout << endl << "Choose type of character: " << endl;
 		cout << "1. " << raceToString(HUMAN) << endl;
 		cout << "2. " << raceToString(FAIRY) << endl;
 		cout << "3. " << raceToString(ELF) << endl;
@@ -239,7 +255,7 @@ void readRace (Player* p) {
 void readGender (Player* p) {
 	unsigned char option;
 	while(true) {
-		cout << "Choose your character's gender: " << endl;
+		cout << endl << "Choose your character's gender: " << endl;
 		cout << "1. " << genderToString(MALE) << endl;
 		cout << "2. " << genderToString(FEMALE) << endl;
 		cout << "3. " << genderToString(OTHER) << endl;
@@ -265,11 +281,11 @@ void readGender (Player* p) {
 void createPlayer (Player* p) {
 	string name;
 	int age;
-	cout << "Choose the name of your character: ";
+	cout << endl << "Choose the name of your character: ";
 	cin.ignore();
 	getline(cin, name);
 	p->setName(name);
-	cout << "How old is your character? ";
+	cout << endl << "How old is your character? ";
 	cin >> age;
 	p->setAge(age);
 	readRace(p);
@@ -277,7 +293,7 @@ void createPlayer (Player* p) {
 }
 
 void printPlayer (Player* _p) {
-	cout << "Your name is " << _p->getName() << ". You are a(n) " << genderToString(_p->getGender()) <<
+	cout << endl << "Your name is " << _p->getName() << ". You are a(n) " << genderToString(_p->getGender()) <<
 	     " " << raceToString(_p->getRace()) << " and you are " << _p->getAge() << " years old. ";
 }
 
@@ -287,19 +303,19 @@ void pathScene() {
 	int choice3;
 	int choice4;
 
-	cout << "There's a shiny little coin in the dirt. Pick it up?" << endl;
+	cout << endl << "There's a shiny little coin in the dirt. Pick it up?" << endl;
 	cout << "1. Yes" << endl << "2. No" << endl << "Choice: " << endl;
 	cin >> choice1;
 
 	if (choice1 == 1) {
-		cout << "You picked up the shiny coin." << endl;
+		cout << endl << "You picked up the shiny coin." << endl;
 		Inventory::getInstance().addItem("shiny coin", 1);
 	}
 	else if (choice1 == 2) {
-		cout << "No wish for you." << endl;
+		cout << endl << "No wish for you." << endl;
 	}
 
-	cout << "You find a clearing with a deep dark well." << endl;
+	cout << endl << "You find a clearing with a deep dark well." << endl;
 
 	if (Inventory::getInstance().hasItem("shiny coin")) {
 		cout << "Make a wish?" << endl;
@@ -307,37 +323,41 @@ void pathScene() {
 		cin >> choice3;
 
 		if (choice3 == 1) {
-			cout << "You threw the coin in the well. What do you wish for?" << endl;
+			cout << endl << "You threw the coin in the well. What do you wish for?" << endl;
 			Inventory::getInstance().removeItem("shiny coin", 1);
-			cout << "1. Rotten fish" << endl << "2. Entrails." << endl << "Choice: " << endl;
+			cout << "1. Rotten fish" << endl << "2. Daisies." << endl << "Choice: " << endl;
 			cin >> choice4;
 			if (choice4 == 1) {
 				Inventory::getInstance().addItem("Rotten fish", 1);
 			}
 			else if (choice4 == 2) {
-				Inventory::getInstance().addItem("Entrails", 3);
+				Inventory::getInstance().addItem("Daisies", 3);
 			}
 		}
 		else if (choice3 == 2) {
-			cout << "You're missing out on perfectly delicious entrails." << endl;
+			cout << endl << "You're missing out on perfectly delicious rotten fish." << endl;
 		}
 	}
 	else {
-		cout << "Look inside?" << endl;
+		cout << endl << "Look inside?" << endl;
 		cout << "1. Yes" << endl << "2. No" << endl << "Choice: " << endl;
 		cin >> choice2;
 
 		if (choice2 == 2) {
-			cout << "Good choice. The abyss is calling." << endl;
+			cout << endl << "Good choice. The abyss is calling." << endl;
 			return;
 		}
 	}
 }
 
-void startScene() {
+void startScene(Player* player) {
+	cout << endl << "You are at a crossroads in a deep dark forest." << endl;
+
+	NPC guide("Forest Spirit", 100, FAIRY, OTHER);
+	guide.speak(player);
+
 	int choice;
 
-	cout << endl << "You are at a crossroads in a deep dark forest." << endl;
 	cout << "1. Follow the path in front of you" << endl;
 	cout << "2. Follow the stream" << endl;
 	cout << "3. Follow the smoke, maybe there's people" << endl;
@@ -356,9 +376,6 @@ void startScene() {
 	}
 }
 
-
-
-
 int main () {
 	Player* playermain = new Player();
 
@@ -376,7 +393,7 @@ int main () {
 		else if (choice == 1) {
 			createPlayer(playermain);
 			printPlayer(playermain);
-			startScene();
+			startScene(playermain);
 			Inventory::getInstance().printItems();
 			break;
 		}
