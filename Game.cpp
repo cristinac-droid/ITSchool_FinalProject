@@ -118,17 +118,20 @@ public:
 
 class Player : public Character {
 	int health;
-	vector<string> reachedAchievements;
 public:
+	vector<string> reachedAchievements;
+	bool isAlive;
 	Player (
 	    string _name,
 	    unsigned int _age,
 	    Race _race,
 	    Gender _gender) : Character(_name, _age, _race, _gender) {
 		health = 100;
+		isAlive = true;
 		cout << "Player " << _name << " created" << endl;
 	}
 	Player () : Character () {
+		isAlive = true;
 		health = 100;
 	}
 public:
@@ -141,6 +144,12 @@ public:
 	void addAchievement(string code) {
 		this->reachedAchievements.push_back(code);
 		cout << "New Achievement Unlocked: " << code << endl;
+	}
+	bool getIsAlive() {
+		return isAlive;
+	}
+	void setAlive(bool state) {
+		isAlive = state;
 	}
 	void speak(Character* other) override {
 		cout << "I'll be the hero of your story!" << endl;
@@ -253,7 +262,7 @@ public:
 	void printItems() const {
 		cout << endl << "Inventory Items: " << endl;
 		if (items.empty()) {
-		    cout << "no items.";
+			cout << "no items.";
 		}
 		for (const auto& item : items) {
 			cout << item.getName() << " (x" << item.getQuantity() << ")" << endl;
@@ -459,6 +468,7 @@ void emptyWellScene(Player* player) {
 					cout << endl << "You fell and broke your legs. No way out." << endl;
 					cout << "They never found your body." << endl;
 					player->addAchievement("Death");
+					player->setAlive(false);
 					break;
 				}
 
@@ -471,6 +481,7 @@ void emptyWellScene(Player* player) {
 					cout << endl << "You fell and broke your legs. No way out." << endl;
 
 					player->addAchievement("Death");
+					player->setAlive(false);
 					break;
 				}
 			}
@@ -489,7 +500,7 @@ void emptyWellScene(Player* player) {
 }
 
 void wellScene(Player* player) {
-    cout << endl << "=================================================" << endl;
+	cout << endl << "=================================================" << endl;
 	cout << endl << "You find a clearing with a deep dark well." << endl;
 
 	if (Inventory::getInstance().hasItem("shiny coin")) {
@@ -519,13 +530,15 @@ void backOfCabinScene(Player* player) {
 			choice = safeInput();
 
 			if (choice == 1) {
-				player->addAchievement("Safe and Sound");
+				player->addAchievement("Safe");
 				cout << endl << "You made it inside. You're safe... for now." << endl;
+				player->setAlive(true);
 				break;
 			}
 			else if (choice == 2) {
 				cout << endl << "You freeze slowly in the cold night." << endl;
 				player->addAchievement("Freeze");
+				player->setAlive(false);
 				break;
 			}
 			else {
@@ -556,6 +569,7 @@ void cabinScene(Player* player, bool gnomeFriend) {
 					cout << endl << "A loud bang echoes." << endl;
 					cout << "You were shot on sight." << endl;
 					player->addAchievement("Private");
+					player->setAlive(false);
 					break;
 				}
 				else if (choice == 2) {
@@ -571,6 +585,7 @@ void cabinScene(Player* player, bool gnomeFriend) {
 							if (choice == 1) {
 								cout << endl << "You freeze to death." << endl;
 								player->addAchievement("Freeze");
+								player->setAlive(false);
 								break;
 							}
 							else if (choice == 2) {
@@ -609,11 +624,13 @@ void cabinScene(Player* player, bool gnomeFriend) {
 				if (choice == 1) {
 					player->addAchievement("Safe");
 					cout << "You step inside safely." << endl;
+					player->setAlive(true);
 					break;
 				}
 				else if (choice == 2) {
 					cout << endl << "You freeze to death." << endl;
 					player->addAchievement("Freeze");
+					player->setAlive(false);
 					break;
 				}
 				else {
@@ -653,6 +670,7 @@ void startScene(Player* player) {
 				break;
 			case 3:
 				cabinScene(player, false);
+				break;
 			default:
 				cout << "Invalid choice" << endl;
 			}
@@ -712,6 +730,7 @@ void streamScene(Player* player) {
 
 	cout << endl << "You have nothing useful." << endl;
 	cout << "The gnome sends you back." << endl;
+	player->setAlive(true);
 	startScene(player);
 }
 
@@ -746,8 +765,8 @@ void loadAchievements(unordered_map<string, string>& achievements) {
 bool printAllAchievements(
     const unordered_map<string, string>& achievements,
     Player* player) {
-    
-    bool goodEnding;
+
+	bool goodEnding = false;
 
 	cout << endl << "= ACHIEVEMENTS =" << endl;
 
@@ -760,8 +779,9 @@ bool printAllAchievements(
 			if (pair.first == code) {
 				cout << pair.first << " - " << pair.second << endl;
 			}
-			if (code == "Freze" || code == "Death" || code == "Private") goodEnding = false;
+			if (code == "Freeze" || code == "Death" || code == "Private") goodEnding = false;
 			if (code == "Safe") goodEnding = true;
+			if (player->getIsAlive() == false) goodEnding = false;
 		}
 	}
 
@@ -785,15 +805,15 @@ bool printAllAchievements(
 }
 
 void printGameSummary(const unordered_map<string, string>& achievements,
-    Player* player) {
-    cout << endl << "=== GAME SUMMARY ===" << endl;
-    Inventory::getInstance().printItems();
+                      Player* player) {
+	cout << endl << "=== GAME SUMMARY ===" << endl;
+	Inventory::getInstance().printItems();
 	bool goodEnding = printAllAchievements(achievements, player);
 	if (goodEnding) {
-	    cout << "You reached the GOOD ENDING!!!";
+		cout << "You reached the GOOD ENDING!!!";
 	}
 	else {
-	    cout << "You reached the BAD ENDING!!!";
+		cout << "You reached the BAD ENDING!!!";
 	}
 }
 
@@ -819,7 +839,8 @@ int main () {
 				loadAchievements(achievements);
 				printPlayer(playermain);
 				startScene(playermain);
-		    	printGameSummary(achievements, playermain);
+				printGameSummary(achievements, playermain);
+				playermain->setAlive(true);
 				break;
 			}
 			else {
@@ -829,7 +850,8 @@ int main () {
 		catch (...) {
 			cout << "Invalid input!" << endl;
 		}
-		
+
 	}
+	delete playermain;
 	return 0;
 }
