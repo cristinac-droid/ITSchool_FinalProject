@@ -15,7 +15,7 @@ using namespace std;
 enum Race {
 	HUMAN,
 	FAIRY,
-	ELF,
+	GNOME,
 	SPIDER,
 };
 
@@ -31,8 +31,8 @@ string raceToString(Race race) {
 		return "HUMAN";
 	case FAIRY:
 		return "FAIRY";
-	case ELF:
-		return "ELF";
+	case GNOME:
+		return "GNOME";
 	case SPIDER:
 		return "SPIDER";
 	default:
@@ -157,9 +157,28 @@ public:
 		cout << endl << _name << " spawns." << endl;
 	}
 	void speak(Character* other) override {
-		cout << endl << "Welcome to the forest, " << other->getName() << "! What would you like to do?" << endl;
+		switch (this->getRace()) {
+		case GNOME:
+			cout << endl << "The gnome eyes " << other->getName()
+			     << ". \"Got any rotten fish?\"" << endl;
+			break;
+
+		case FAIRY:
+			cout << endl << "Welcome to the forest, "
+			     << other->getName()
+			     << "! What would you like to do?" << endl;
+			break;
+
+		default:
+			cout << endl << "..." << endl;
+			break;
+		}
 	}
 };
+
+void interact(Character* a, Character* b) {
+	a->speak(b);
+}
 
 class InventoryItem {
 private:
@@ -233,6 +252,9 @@ public:
 
 	void printItems() const {
 		cout << endl << "Inventory Items: " << endl;
+		if (items.empty()) {
+		    cout << "no items.";
+		}
 		for (const auto& item : items) {
 			cout << item.getName() << " (x" << item.getQuantity() << ")" << endl;
 		}
@@ -254,7 +276,7 @@ void readRace (Player* p) {
 		cout << endl << "Choose type of character: " << endl;
 		cout << "1. " << raceToString(HUMAN) << endl;
 		cout << "2. " << raceToString(FAIRY) << endl;
-		cout << "3. " << raceToString(ELF) << endl;
+		cout << "3. " << raceToString(GNOME) << endl;
 		cout << "4. " << raceToString(SPIDER) << endl;
 		cin >> option;
 		switch (option) {
@@ -265,7 +287,7 @@ void readRace (Player* p) {
 			p->setRace(FAIRY);
 			break;
 		case '3' :
-			p->setRace(ELF);
+			p->setRace(GNOME);
 			break;
 		case '4' :
 			p->setRace(SPIDER);
@@ -325,6 +347,7 @@ void printPlayer (Player* _p) {
 
 void coinScene(Player* player) {
 	int choice;
+	cout << endl << "=================================================" << endl;
 	while(true) {
 		cout << endl << "There's a shiny little coin in the dirt. Pick it up?" << endl;
 		cout << "1. Yes" << endl << "2. No" << endl << "Choice: " << endl;
@@ -350,6 +373,8 @@ void coinScene(Player* player) {
 		}
 	}
 }
+
+void streamScene(Player* player);
 
 void wishChoiceScene(Player* player) {
 	int choice2;
@@ -378,6 +403,7 @@ void wishChoiceScene(Player* player) {
 			cout << "Invalid input!" << endl;
 		}
 	}
+	streamScene(player);
 }
 
 void wishScene(Player* player) {
@@ -389,6 +415,7 @@ void wishScene(Player* player) {
 
 		try {
 			choice1 = safeInput();
+			cout << endl << "================================================="<< endl;
 
 			if (choice1 == 1) {
 				cout << endl << "You threw the coin in the well." << endl;
@@ -462,6 +489,7 @@ void emptyWellScene(Player* player) {
 }
 
 void wellScene(Player* player) {
+    cout << endl << "=================================================" << endl;
 	cout << endl << "You find a clearing with a deep dark well." << endl;
 
 	if (Inventory::getInstance().hasItem("shiny coin")) {
@@ -477,12 +505,134 @@ void pathScene(Player* player) {
 	wellScene(player);
 }
 
+void backOfCabinScene(Player* player) {
+	int choice;
+
+	cout << endl << "You look around the cabin and find a bolt cutter." << endl;
+	Inventory::getInstance().addItem("Bolt cutter", 1);
+
+	while (true) {
+		cout << endl << "Force your way inside the cabin?" << endl;
+		cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
+
+		try {
+			choice = safeInput();
+
+			if (choice == 1) {
+				player->addAchievement("Safe and Sound");
+				cout << endl << "You made it inside. You're safe... for now." << endl;
+				break;
+			}
+			else if (choice == 2) {
+				cout << endl << "You freeze slowly in the cold night." << endl;
+				player->addAchievement("Freeze");
+				break;
+			}
+			else {
+				cout << "Invalid option." << endl;
+			}
+		}
+		catch (...) {
+			cout << "Invalid input!" << endl;
+		}
+	}
+}
+
+void cabinScene(Player* player, bool gnomeFriend) {
+	int choice;
+
+	cout << endl << "You arrive at a small wooden cabin." << endl;
+
+	if (!gnomeFriend) {
+		while (true) {
+			cout << endl << "The door is slightly open..." << endl;
+			cout << "Enter?" << endl;
+			cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
+
+			try {
+				choice = safeInput();
+
+				if (choice == 1) {
+					cout << endl << "A loud bang echoes." << endl;
+					cout << "You were shot on sight." << endl;
+					player->addAchievement("Private");
+					break;
+				}
+				else if (choice == 2) {
+					cout << endl << "It's getting cold outside." << endl;
+
+					while (true) {
+						cout << "Stay outside?" << endl;
+						cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
+
+						try {
+							choice = safeInput();
+
+							if (choice == 1) {
+								cout << endl << "You freeze to death." << endl;
+								player->addAchievement("Freeze");
+								break;
+							}
+							else if (choice == 2) {
+								backOfCabinScene(player);
+								break;
+							}
+							else {
+								cout << "Invalid option." << endl;
+							}
+						}
+						catch (...) {
+							cout << "Invalid input!" << endl;
+						}
+					}
+					break;
+				}
+				else {
+					cout << "Invalid option." << endl;
+				}
+			}
+			catch (...) {
+				cout << "Invalid input!" << endl;
+			}
+		}
+	}
+	else {
+		cout << endl << "The gnome waves its hand and unlocks the door." << endl;
+
+		while (true) {
+			cout << "Go inside the cabin?" << endl;
+			cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
+
+			try {
+				choice = safeInput();
+
+				if (choice == 1) {
+					player->addAchievement("Safe");
+					cout << "You step inside safely." << endl;
+					break;
+				}
+				else if (choice == 2) {
+					cout << endl << "You freeze to death." << endl;
+					player->addAchievement("Freeze");
+					break;
+				}
+				else {
+					cout << "Invalid option." << endl;
+				}
+			}
+			catch (...) {
+				cout << "Invalid input!" << endl;
+			}
+		}
+	}
+}
+
 void startScene(Player* player) {
 	while(true) {
 		cout << endl << "You are at a crossroads in a deep dark forest." << endl;
 
-		NPC guide("Forest Spirit", 100, FAIRY, OTHER);
-		guide.speak(player);
+		NPC fairy("Forest Fairy", 100, FAIRY, OTHER);
+		interact(&fairy, player);
 
 		int choice;
 
@@ -499,8 +649,10 @@ void startScene(Player* player) {
 				pathScene(player);
 				break;
 			case 2:
-				cout << "You follow the stream... (not implemented yet)" << endl;
+				streamScene(player);
 				break;
+			case 3:
+				cabinScene(player, false);
 			default:
 				cout << "Invalid choice" << endl;
 			}
@@ -512,6 +664,57 @@ void startScene(Player* player) {
 		}
 	}
 }
+
+void streamScene(Player* player) {
+	int choice;
+	bool gnomeFriend = false;
+
+	cout << endl << "You follow the stream..." << endl;
+
+	NPC gnome("Forest Gnome", 50, GNOME, MALE);
+
+	cout << endl << "The gnome looks at you expectantly." << endl;
+	interact(&gnome, player);
+
+	if (Inventory::getInstance().hasItem("Rotten fish")) {
+		cout << "Offer rotten fish?" << endl;
+		cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
+
+		try {
+			choice = safeInput();
+
+			if (choice == 1) {
+				cout << endl << "The gnome happily takes the fish." << endl;
+				Inventory::getInstance().removeItem("Rotten fish", 1);
+				player->addAchievement("Friends");
+				gnomeFriend = true;
+				cabinScene(player, true);
+				return;
+			}
+			else if (choice == 2) {
+				cout << endl << "The gnome frowns." << endl;
+			}
+		}
+		catch (...) {
+			cout << "Invalid input!" << endl;
+		}
+	}
+
+	if (Inventory::getInstance().hasItem("Daisies")) {
+		cout << endl << "You offer daisies." << endl;
+		cout << "The gnome frowns and blows them into your face." << endl;
+		Inventory::getInstance().removeItem("Daisies", 3);
+		cout << "*ACHOO!*" << endl;
+		player->addAchievement("Sneeze");
+		cabinScene(player, false);
+		return;
+	}
+
+	cout << endl << "You have nothing useful." << endl;
+	cout << "The gnome sends you back." << endl;
+	startScene(player);
+}
+
 
 void loadAchievements(unordered_map<string, string>& achievements) {
 	ifstream file("achievements.txt");
@@ -540,11 +743,13 @@ void loadAchievements(unordered_map<string, string>& achievements) {
 	file.close();
 }
 
-void printAllAchievements(
+bool printAllAchievements(
     const unordered_map<string, string>& achievements,
     Player* player) {
+    
+    bool goodEnding;
 
-	cout << endl << "=== ACHIEVEMENTS ===" << endl;
+	cout << endl << "= ACHIEVEMENTS =" << endl;
 
 	vector<string> reached = player->getReachedAchievements();
 
@@ -555,6 +760,8 @@ void printAllAchievements(
 			if (pair.first == code) {
 				cout << pair.first << " - " << pair.second << endl;
 			}
+			if (code == "Freze" || code == "Death" || code == "Private") goodEnding = false;
+			if (code == "Safe") goodEnding = true;
 		}
 	}
 
@@ -573,6 +780,20 @@ void printAllAchievements(
 		if (!found) {
 			cout << pair.first << " - ???" << endl;
 		}
+	}
+	return goodEnding;
+}
+
+void printGameSummary(const unordered_map<string, string>& achievements,
+    Player* player) {
+    cout << endl << "=== GAME SUMMARY ===" << endl;
+    Inventory::getInstance().printItems();
+	bool goodEnding = printAllAchievements(achievements, player);
+	if (goodEnding) {
+	    cout << "You reached the GOOD ENDING!!!";
+	}
+	else {
+	    cout << "You reached the BAD ENDING!!!";
 	}
 }
 
@@ -598,8 +819,7 @@ int main () {
 				loadAchievements(achievements);
 				printPlayer(playermain);
 				startScene(playermain);
-				Inventory::getInstance().printItems();
-				printAllAchievements(achievements, playermain);
+		    	printGameSummary(achievements, playermain);
 				break;
 			}
 			else {
@@ -609,6 +829,7 @@ int main () {
 		catch (...) {
 			cout << "Invalid input!" << endl;
 		}
+		
 	}
 	return 0;
 }

@@ -1,2 +1,7 @@
 Death,Died in the well
 Friend,Befriended the Forest Spirit
+Sneeze,Allergies
+Friends,Befriended the Gnome
+Freeze,Froze to Death
+Private,That's private property
+Safe, Safe and Sound
