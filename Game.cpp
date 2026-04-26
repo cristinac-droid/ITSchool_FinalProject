@@ -1,10 +1,7 @@
 #include <iostream>
 #include <list>
-#include <memory>
 #include <string>
-#include <algorithm>
 #include <vector>
-#include <map>
 #include <limits>
 #include <fstream>
 #include <sstream>
