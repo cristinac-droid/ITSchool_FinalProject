@@ -520,7 +520,7 @@ void backOfCabinScene(Player* player) {
 	Inventory::getInstance().addItem("Bolt cutter", 1);
 
 	while (true) {
-		cout << endl << "Force your way inside the cabin?" << endl;
+		cout << endl << "There's a small hut behind the cabin. Go inside?" << endl;
 		cout << "1. Yes" << endl << "2. No" << endl << "Choice: ";
 
 		try {
